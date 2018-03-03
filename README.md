@@ -1,2 +1,4 @@
 # datasciencecoursera
-Johns Hopkings Data Science spaceilization
+Johns Hopkings Data Science Specialization 
+
+## This is a markdown file
