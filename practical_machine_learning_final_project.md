@@ -1,45 +1,12 @@
-
-
-```r
+---
 title: "Practical ML Final Project"
-```
-
-```
-## Warning: NAs introduced by coercion
-```
-
-```
-## Error in title:"Practical ML Final Project": NA/NaN argument
-```
-
-```r
-author: "Miguel Angel Raviela (mraviela@gmail.com)"
-```
-
-```
-## Error in eval(expr, envir, enclos): object 'author' not found
-```
-
-```r
+author: "By Miguel Angel Raviela (mraviela@gmail.com)"
 date: "6/21/2018"
-```
-
-```
-## Warning: NAs introduced by coercion
-```
-
-```
-## Error in date:"6/21/2018": NA/NaN argument
-```
-
-```r
-output:
-  html_document: default
-```
-
-```
-## Error in eval(expr, envir, enclos): object 'output' not found
-```
+output: 
+  html_document: 
+    keep_md: yes
+    self_contained: no
+---
 
 
 
@@ -76,7 +43,7 @@ dim(data)
 missmap(data,col=c('yellow','black'),y.at=1,y.labels='',legend=TRUE)
 ```
 
-![plot of chunk data_show](figure/data_show-1.png)
+![](practical_machine_learning_final_project_files/figure-html/data_show-1.png)<!-- -->
 
 ### Transformations
 
@@ -141,7 +108,7 @@ prp(model_rpart$finalModel, type = 2, nn=T,
     varlen = 8, shadow.col = "gray")
 ```
 
-![plot of chunk model1](figure/model1-1.png)
+![](practical_machine_learning_final_project_files/figure-html/model1-1.png)<!-- -->
 
 ```r
 pred_rpart <- predict(model_rpart, testing)

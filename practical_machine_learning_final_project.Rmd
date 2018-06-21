@@ -1,11 +1,12 @@
-
-```{r }
+---
 title: "Practical ML Final Project"
-author: "Miguel Angel Raviela (mraviela@gmail.com)"
+author: "By Miguel Angel Raviela (mraviela@gmail.com)"
 date: "6/21/2018"
-output:
-  html_document: default
-```{r }
+output: 
+  html_document: 
+    keep_md: yes
+    self_contained: no
+---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
