@@ -1,0 +1,113 @@
+
+```{r }
+title: "Practical ML Final Project"
+author: "Miguel Angel Raviela (mraviela@gmail.com)"
+date: "6/21/2018"
+output:
+  html_document: default
+```{r }
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(Amelia)
+library(ggplot2)
+library(corrplot)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+```
+
+## Overview
+
+This document was created as the final project for the course **Practical Machine Learning by Johns Hopkins University** at Coursera.  
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).  
+
+The data set for this project are available here:  
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv   
+
+The goal of this project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. 
+
+## Processing  
+
+### Exploratory data analysis
+```{r data_load, echo=TRUE}
+data <- read.csv("pml-training.csv", na.strings=c("NA","#DIV/0!",""))
+```
+The original dataset structure  reveals that there are 19622 observations with 160 variables. Is important to notice that there are several records that contains NA values, in next step we are going to clean up the dataset in order to get it tidy.  
+
+```{r data_show, echo=TRUE}
+dim(data)
+missmap(data,col=c('yellow','black'),y.at=1,y.labels='',legend=TRUE)
+```
+
+### Transformations
+
+There are two main transformations needed for the dataset, the first one is to remove those variables (features) that have many NA, how many? I decided that more than 20% of NAs affects the relationship of the feature with the final variable. The second transformation is about those features that are not contributing to the prediction, in this case the first seven.  
+
+```{r transformations, echo=TRUE}
+data_rows = dim(data)[1] 
+max_na_rows = data_rows * .2 
+#Cols to remove that contains lots of NAs
+cols_to_remove <- which(colSums(is.na(data) | data=="") > max_na_rows)
+data_clean <- data[,-cols_to_remove]
+#Removing the first 7 cols
+data_clean <- data_clean[,-c(1:7)]
+dim(data_clean)
+```  
+
+Finally we have reduce from 160 to **53** variables, getting out a tidy dataset.
+
+
+### Modeling
+
+The variable to predict **classe** is a factor with 5 posible outputs A, B, C, D or E, this give us the direction that we are dealing with a classification problem so the first effort will be to use a Tree. The partitioning strategy is to take 75% for training set and 25% for testing.
+
+```{r model1, echo=TRUE}
+#seed set for reproducibility
+set.seed(2018)
+
+inTrain <- createDataPartition(data_clean$classe, p = 0.75, list = F)
+
+training <- data_clean[inTrain,]
+testing <- data_clean[-inTrain,]
+
+dim(training)
+dim(testing)
+#model creation
+model_rpart <- train(classe ~ ., method="rpart", data = training)
+
+#tree model graphic representation
+par(mfrow=c(1,1))
+prp(model_rpart$finalModel, type = 2, nn=T,
+    fallen.leaves = T, faclen = 4,
+    varlen = 8, shadow.col = "gray")
+
+pred_rpart <- predict(model_rpart, testing)
+#confusion matrix with testing dataset
+confusionMatrix(testing$classe, pred_rpart)
+```  
+
+Our **tree model** confusion matrix reveals that the accuracy achieved by this model is just 54% a little more that random coin flip, so next step is to use **Random Forest** to find a better model, here we will consider 5-fold cross validation strategy by passing the right parameters to the caret train function, 300 trees will be used.
+
+```{r model2, echo=TRUE}
+#second model creation using random forest, cross validation 5-fold and 300 trees
+model_rf <- train(classe ~ ., 
+                  data = training, 
+                  method = "rf", 
+                  trControl = trainControl(method = "cv", 5), 
+                  ntree = 300)
+
+pred_rf <- predict(model_rf, testing)
+#confusion matrix with testing dataset
+confusionMatrix(testing$classe, pred_rf)
+
+model_rf
+```
+
+## Conclusions
+
+The model generated by **Random Forest** according to the confusion matrix achieved an **accuracy of 0.9935** a way better than our tree model, the expected error is less than 1%, cross validation with 5 fold looks like is good enought, the value used for the final model was **mtry = 27** with an accuracy of 0.9918. As final note we can say that in this case Random Forest generated the best model, also the computing time to get it was longer than the needed for the tree model.
+```
+
